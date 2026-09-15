@@ -120,6 +120,12 @@ def run_journey(population: users.Population, i: int, policy, scenario: str = "i
 def always_show(user, state, offer, opportunity):
     return Action.SHOW
 
+def without(offer_id: str):
+    """Show everything except one offer, so the samWe user can be replayed with it
+    switched off and any difference attributed to that offer alone."""
+    def policy(user, state, offer, opportunity):
+        return Action.SUPPRESS if offer.id == offer_id else Action.SHOW
+    return policy
 
 def contextual_only(user, state, offer, opportunity):
     """Drop the persistent CTA and keep only the triggered upsells."""
@@ -167,3 +173,17 @@ def spaced(min_gap_hours: float = 6.0, defer_window: float = 2.0):
         return Action.SUPPRESS
     return policy
 
+def rest_after_contextual(quiet_hours: float = 48.0):
+    """Keep the CTA, but stand it down for a while after a triggered upsell fires."""
+    def policy(user, state, offer, opportunity):
+        if offer.contextual or not state.history:
+            return Action.SHOW
+        last = max(
+            (hour for offer_id, hour in state.history
+             if offers.OFFERS[offer_id].contextual),
+            default=None,
+        )
+        if last is not None and opportunity.hour - last < quiet_hours:
+            return Action.SUPPRESS
+        return Action.SHOW
+    return policy
