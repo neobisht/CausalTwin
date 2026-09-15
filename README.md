@@ -57,7 +57,7 @@ Secondary
 - Accuracy of synthetic predictions vs. real experiment results
 
 Prototype success
-For the hackathon, the prototype is successful if it can:
+This prototype is successful if it can:
 
 - simulate multiple offer sequences for the same user
 - identify when one offer helps or hurts a future offer
